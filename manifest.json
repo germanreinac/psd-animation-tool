@@ -1,0 +1,25 @@
+{
+  "manifestVersion": 5,
+  "id": "ps-animation-tool.frame-animator",
+  "name": "Frame Animator",
+  "version": "0.1.0",
+  "main": "index.html",
+  "host": {
+    "app": "PS",
+    "minVersion": "23.3.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "frameAnimatorPanel",
+      "label": { "default": "Frame Animator" },
+      "minimumSize": { "width": 230, "height": 320 },
+      "maximumSize": { "width": 2000, "height": 2000 },
+      "preferredDockedSize": { "width": 270, "height": 520 },
+      "preferredFloatingSize": { "width": 270, "height": 560 }
+    }
+  ],
+  "requiredPermissions": {
+    "localFileSystem": "request"
+  }
+}

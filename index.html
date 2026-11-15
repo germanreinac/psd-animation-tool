@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="no-doc" class="notice hidden">Open a document to start animating.</div>
+
+  <div id="setup" class="notice hidden">
+    <p>No <b>ANIMATION</b> group in this document yet.</p>
+    <sp-button id="btn-setup" variant="cta">Set up animation</sp-button>
+  </div>
+
+  <div id="main" class="hidden">
+    <div class="row status">
+      <span id="frame-counter">Frame – / –</span>
+      <span id="hold-label" class="muted"></span>
+    </div>
+
+    <div class="row transport">
+      <sp-action-button id="btn-first" title="First frame">|◀</sp-action-button>
+      <sp-action-button id="btn-prev" title="Previous frame">◀</sp-action-button>
+      <sp-action-button id="btn-play" title="Play / stop">▶ Play</sp-action-button>
+      <sp-action-button id="btn-next" title="Next frame">▶</sp-action-button>
+      <sp-action-button id="btn-last" title="Last frame">▶|</sp-action-button>
+    </div>
+
+    <div class="row">
+      <sp-action-button id="btn-new" title="Add an empty frame after the current one">+ New</sp-action-button>
+      <sp-action-button id="btn-dup" title="Duplicate the current frame">Duplicate</sp-action-button>
+      <sp-action-button id="btn-del" title="Delete the current frame">Delete</sp-action-button>
+    </div>
+
+    <div class="row">
+      <span class="label">Hold</span>
+      <sp-action-button id="btn-hold-minus" title="Shorter hold">−</sp-action-button>
+      <sp-action-button id="btn-hold-plus" title="Longer hold">+</sp-action-button>
+      <sp-action-button id="btn-renumber" title="Rename frames 001, 002, … (keeps holds)">Renumber</sp-action-button>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <span class="label">FPS</span>
+        <input id="fps" type="number" min="1" max="60" value="12" />
+        <label class="check"><input id="loop" type="checkbox" checked /> Loop</label>
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="check"><input id="onion-enabled" type="checkbox" checked /> Onion skin</label>
+      <div class="row">
+        <span class="label">Before</span>
+        <input id="onion-before" type="number" min="0" max="5" value="1" />
+        <span class="label">After</span>
+        <input id="onion-after" type="number" min="0" max="5" value="1" />
+      </div>
+      <div class="row">
+        <span class="label">Opacity</span>
+        <input id="onion-opacity" type="range" min="5" max="80" value="30" />
+        <span id="onion-opacity-value" class="muted">30%</span>
+      </div>
+    </div>
+
+    <div id="frame-list" class="frame-list"></div>
+
+    <div class="row">
+      <sp-button id="btn-export" variant="secondary">Export PNG sequence…</sp-button>
+    </div>
+  </div>
+
+  <div id="message" class="message"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
