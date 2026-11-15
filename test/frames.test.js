@@ -62,3 +62,64 @@ test("file naming", () => {
   assert.equal(F.exportFileName("shot", 7, 24), "shot_0007.png");
   assert.equal(F.exportFileName("shot", 7, 12000), "shot_00007.png");
 });
+
+// ---------------------------------------------------------------- shots
+
+const L = (name, children) => ({ name, isGroup: !!children, ref: { name }, children });
+
+test("shot naming", () => {
+  assert.equal(F.isShotName("SHOT 03 Chase"), true);
+  assert.equal(F.isShotName("shot"), true);
+  assert.equal(F.isShotName("shotgun"), false);
+  assert.equal(F.isStaticName("BG sky"), true);
+  assert.equal(F.isStaticName("BGM"), false);
+  assert.equal(F.nextShotName(["SHOT 01", "SHOT 04 End"]), "SHOT 05");
+  assert.equal(F.nextShotName([]), "SHOT 01");
+  assert.equal(F.renumberShotName("shot 7 Chase", 2), "SHOT 02 Chase");
+  assert.equal(F.renumberShotName("SHOT", 1), "SHOT 01");
+});
+
+// Photoshop order: top-to-bottom. Shot 01 is at the bottom.
+const scene = () =>
+  F.buildModel(
+    [
+      L("SHOT 02 B", [L("002 x3"), L("001"), L("BG street")]),
+      L("notes"),
+      L("SHOT 01 A", [L("002 x2"), L("001")]),
+    ],
+    { name: "ANIMATION" }
+  );
+
+test("buildModel orders shots and frames bottom-up and separates BG", () => {
+  const m = scene();
+  assert.equal(m.implicit, false);
+  assert.deepEqual(m.shots.map((s) => s.name), ["SHOT 01 A", "SHOT 02 B"]);
+  assert.deepEqual(m.shots[1].frames.map((f) => f.name), ["001", "002 x3"]);
+  assert.deepEqual(m.shots[1].statics.map((r) => r.name), ["BG street"]);
+  assert.deepEqual(m.shots.map((s) => s.start), [0, 2]);
+  assert.equal(m.flat.length, 4);
+  assert.equal(F.frameAt(m, 3).name, "002 x3");
+});
+
+test("buildModel treats a root without shots as one implicit shot", () => {
+  const m = F.buildModel([L("002"), L("001"), L("BG")], { name: "ANIMATION" });
+  assert.equal(m.implicit, true);
+  assert.equal(m.shots.length, 1);
+  assert.deepEqual(m.shots[0].frames.map((f) => f.name), ["001", "002"]);
+  assert.equal(m.shots[0].statics.length, 1);
+});
+
+test("timelines across shots respect holds", () => {
+  const m = scene();
+  assert.deepEqual(F.globalTimeline(m), [0, 1, 1, 2, 3, 3, 3]);
+  assert.deepEqual(F.shotTimeline(m, 1), [2, 3, 3, 3]);
+});
+
+test("computeSceneDisplay shows only the current shot, onion stays in-shot", () => {
+  const m = scene();
+  const d = F.computeSceneDisplay(m, 2, { enabled: true, before: 2, after: 1, opacity: 30 });
+  assert.deepEqual(d.shotVisible, [false, true]);
+  assert.equal(d.frames[0], null);
+  assert.deepEqual(d.frames[1].map((x) => x.visible), [true, true]);
+  assert.equal(d.frames[1][0].opacity, 100);
+});

@@ -35,30 +35,76 @@ input[type="range"] { flex: 1; }
 
 .notice { padding: 12px 4px; }
 
-.frame-list {
-  border-top: 1px solid var(--uxp-host-border-color);
-  margin-top: 8px;
-  padding-top: 6px;
-  max-height: 220px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
 
-.frame-chip {
-  border: 1px solid var(--uxp-host-border-color);
-  border-radius: 3px;
-  padding: 3px 6px;
-  margin: 0 4px 4px 0;
-  cursor: pointer;
-}
 
-.frame-chip.current {
-  background-color: var(--uxp-host-link-text-color, #378ef0);
-  color: #fff;
-  border-color: transparent;
-}
 
 .message { margin-top: 8px; min-height: 16px; color: var(--uxp-host-text-color-secondary); }
 .message.error { color: #e34850; }
+
+/* ---------------------------------------------------------------- shared views */
+
+.between { justify-content: space-between; }
+.inline { display: inline-flex; margin-right: 4px; }
+
+.thumb {
+  display: block;
+  background-color: var(--uxp-host-widget-hover-background-color, #444);
+  object-fit: contain;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--uxp-host-text-color-secondary);
+}
+
+/* ---------------------------------------------------------------- timeline (linear) */
+
+.timeline {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.tl-shot { margin-bottom: 6px; }
+
+.tl-shot-header {
+  font-weight: bold;
+  margin: 4px 0;
+  cursor: pointer;
+}
+
+.tl-frames { display: flex; flex-direction: row; flex-wrap: wrap; }
+
+.tl-frame {
+  border: 2px solid transparent;
+  border-radius: 3px;
+  margin: 0 3px 3px 0;
+  cursor: pointer;
+}
+
+.tl-frame.current { border-color: var(--uxp-host-link-text-color, #378ef0); }
+.tl-frame .thumb { height: 40px; }
+.tl-frame .cap { font-size: 10px; text-align: center; }
+
+/* ---------------------------------------------------------------- storyboard */
+
+.sb-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  overflow-y: auto;
+}
+
+.sb-card {
+  border: 2px solid var(--uxp-host-border-color);
+  border-radius: 4px;
+  padding: 4px;
+  margin: 0 8px 8px 0;
+  cursor: pointer;
+}
+
+.sb-card.current { border-color: var(--uxp-host-link-text-color, #378ef0); }
+.sb-card .thumb { height: 96px; }
+.sb-title { font-weight: bold; margin-top: 4px; }
+.sb-meta { color: var(--uxp-host-text-color-secondary); font-size: 10px; }

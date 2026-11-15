@@ -106,8 +106,109 @@ function exportFileName(stem, n, total) {
   return `${stem}_${pad(n, Math.max(4, String(total).length))}.png`;
 }
 
+// ---------------------------------------------------------------- shots
+
+const SHOT_RE = /^shot\b\s*(\d+)?\s*(.*)$/i;
+const STATIC_RE = /^bg\b/i;
+
+function isShotName(name) {
+  return SHOT_RE.test(String(name ?? "").trim());
+}
+
+/** Layers named "BG…" inside a shot are shown on every frame of that shot. */
+function isStaticName(name) {
+  return STATIC_RE.test(String(name ?? "").trim());
+}
+
+function nextShotName(names) {
+  let max = 0;
+  for (const n of names) {
+    const m = SHOT_RE.exec(String(n ?? "").trim());
+    if (m && m[1]) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return `SHOT ${pad(Math.max(max, names.length) + 1, 2)}`;
+}
+
+/** "shot 7 Chase" + 2 -> "SHOT 02 Chase" */
+function renumberShotName(name, n) {
+  const m = SHOT_RE.exec(String(name ?? "").trim());
+  const title = m ? m[2].trim() : "";
+  return `SHOT ${pad(n, 2)}${title ? " " + title : ""}`;
+}
+
+/**
+ * Build the scene model from the ANIMATION group's children.
+ * nodes: [{ name, isGroup, ref, children? }] listed top-to-bottom (Photoshop order).
+ * Shots are child groups named "SHOT…", first shot = bottom-most.
+ * With no shot groups at all, the whole root is one implicit shot (older documents).
+ */
+function buildModel(nodes, rootRef) {
+  const shotNodes = nodes.filter((n) => n.isGroup && isShotName(n.name));
+  const implicit = shotNodes.length === 0;
+  const sources = implicit
+    ? [{ name: "SHOT 01", ref: rootRef, children: nodes, implicit: true }]
+    : [...shotNodes].reverse();
+
+  const shots = sources.map((s) => {
+    const kids = s.children || [];
+    return {
+      ref: s.ref,
+      name: s.name,
+      implicit: !!s.implicit,
+      statics: kids.filter((k) => isStaticName(k.name)).map((k) => k.ref),
+      frames: kids
+        .filter((k) => !isStaticName(k.name))
+        .reverse()
+        .map((k) => ({ ref: k.ref, name: k.name, hold: parseFrameName(k.name).hold })),
+    };
+  });
+
+  const flat = [];
+  shots.forEach((s, si) => {
+    s.start = flat.length;
+    s.frames.forEach((_, fi) => flat.push({ shot: si, frame: fi }));
+  });
+  return { implicit, shots, flat };
+}
+
+function frameAt(model, g) {
+  const e = model.flat[g];
+  return e ? model.shots[e.shot].frames[e.frame] : null;
+}
+
+/** Only the current frame's shot is visible; onion skin stays inside that shot. */
+function computeSceneDisplay(model, g, onion) {
+  const e = model.flat[g];
+  const cur = e ? e.shot : -1;
+  return {
+    shotVisible: model.shots.map((_, si) => si === cur),
+    frames: model.shots.map((s, si) => (si === cur ? computeDisplay(s.frames.length, e.frame, onion) : null)),
+  };
+}
+
+/** Global frame index for each tick of the whole film. */
+function globalTimeline(model) {
+  const holds = model.flat.map((_, g) => frameAt(model, g).hold);
+  return expandTimeline(holds);
+}
+
+/** Global frame index for each tick of one shot. */
+function shotTimeline(model, si) {
+  const s = model.shots[si];
+  return expandTimeline(s.frames.map((f) => f.hold)).map((fi) => s.start + fi);
+}
+
 module.exports = {
   ROOT_NAME,
+  isShotName,
+  isStaticName,
+  nextShotName,
+  renumberShotName,
+  buildModel,
+  frameAt,
+  computeSceneDisplay,
+  globalTimeline,
+  shotTimeline,
   MAX_HOLD,
   clampInt,
   pad,

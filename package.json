@@ -4,6 +4,10 @@
   "private": true,
   "description": "Frame Animator: a UXP panel for frame-by-frame animation in Photoshop",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:smoke": "node test/smoke/plugin.smoke.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
   }
 }
